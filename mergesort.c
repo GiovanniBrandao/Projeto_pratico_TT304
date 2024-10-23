@@ -94,8 +94,103 @@ int *ler_arquivo(FILE *arquivo, int *tamanho) //essa função veio do chat, usei
     return valores;
 }
 
+//Implementação do MergeSort
+void merge(int vet[], int esq, int meio, int dir)
+{
+    int tamVet1 = meio - esq + 1;
+    int tamVet2 = dir - meio;
+
+    int E[tamVet1], D[tamVet2]; //Vetores temporarios, mudar para alocacao dinamica
+
+    for (int i = 0; i < tamVet1; i++)
+        E[i] = vet[esq + i];
+    
+    for (int j = 0; j < tamVet2; j++)
+        D[j] = vet[meio + 1 + j];
+    
+    int i = 0, j = 0, k = esq;
+
+    while (i < tamVet1 && j < tamVet2)
+    {
+        if (E[i] <= D[j])
+        {
+            vet[k] = E[i];
+            i++;
+        }
+        else
+        {
+            vet[k] = D[j];
+            j++;
+        }
+        k++;
+    }
+
+    while (i < tamVet1)
+    {
+        vet[k] = E[i];
+        i++;
+        k++;
+    }
+
+    while (j < tamVet2)
+    {
+        vet[k] = D[j];
+        j++;
+        k++;
+    }
+        
+    }
+    
+
+}
+
+void mergeSort(int vet[], int esq, int dir)
+{
+    if (esq < dir)
+    {
+        int meio = esq + (dir -1) / 2; 
+
+        mergeSort(vet, l, dir);
+        mergeSort(vet, meio + 1, dir);
+
+        merge(vet, esq, meio, dir);
+
+    }
+
+
+}
+
+struct thread_data {
+    int *vet;      // Ponteiro para o array de inteiros
+    int inicio;     // Índice inicial
+    int fim;       // Índice final
+};
+
+void *thread_merge_sort(void *arg) {
+    struct thread_data *data = (struct thread_data *)arg;
+    mergeSort(data->arr, data->start, data->end);
+    pthread_exit(NULL);
+}
+
+
+
 int organizacao() //onde vai ter o mergesort
 {
+    // Cria as threads e inicia o Merge Sort em cada uma
+    for (int i = 0; i < T; i++) {
+        td[i].arr = vetor;            // Vetor de inteiros
+        td[i].start = i * (N / T);    // Índice inicial
+        td[i].end = (i + 1) * (N / T) - 1; // Índice final
+        pthread_create(&threads[i], NULL, thread_merge_sort, &td[i]);
+    }
+
+    // Aguarda a conclusão de todas as threads
+    for (int i = 0; i < T; i++) {
+        pthread_join(threads[i], NULL);
+
+    merge(vetor, 0, (N / T) - 1, N - 1);
+}
+
 }
 
 int main(int arqc, char *arqv[])

@@ -12,8 +12,15 @@ pthread_t t6;
 pthread_t t7;
 pthread_t t8;
 
-int executar_funcoes() // essa função vai unir a de ler o arquivo e organizar os valores, para a thread fazer ambas
+int executar_funcoes(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatual) // essa função vai unir a de ler o arquivo e organizar os valores, para a thread fazer ambas
 {
+
+ler_arquivos(&arquivo, &posidofile, &valores, &tamanhoatual);
+
+
+organizacao();
+
+
 }
 
 int *ler_arquivo(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatual) // passar o arquivo e o vetor para encontar o nome do arquivo
@@ -96,6 +103,9 @@ int *ler_arquivo(FILE *arquivo, int *tamanho) //essa função veio do chat, usei
 
 int organizacao() //onde vai ter o mergesort
 {
+
+
+
 }
 
 int main(int arqc, char *arqv[])

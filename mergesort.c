@@ -12,8 +12,15 @@ pthread_t t6;
 pthread_t t7;
 pthread_t t8;
 
-int executar_funcoes() // essa função vai unir a de ler o arquivo e organizar os valores, para a thread fazer ambas
+int executar_funcoes(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatual) // essa função vai unir a de ler o arquivo e organizar os valores, para a thread fazer ambas
 {
+
+ler_arquivos(&arquivo, &posidofile, &valores, &tamanhoatual);
+
+
+organizacao(valores, 0, tamanhoatual - 1);
+
+
 }
 
 int *ler_arquivo(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatual) // passar o arquivo e o vetor para encontar o nome do arquivo
@@ -60,41 +67,7 @@ int *ler_arquivo(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatua
     return valores;
 }
 
-int *ler_arquivo(FILE *arquivo, int *tamanho) //essa função veio do chat, usei de exemplo
-{
-    int capacidade = 100; // Capacidade inicial do vetor
-    int *valores;
-    int valor; // está variável irá guardar o valor atual lido para guardar em "valores"
 
-    valores = (int *)malloc(capacidade * sizeof(int)); // Alocação inicial
-    if (valores == NULL)
-    {
-        printf("Erro ao alocar memoria.\n");
-        return 1;
-    }
-
-    *tamanho = 0; // Tamanho atual do vetor
-
-    while (fscanf(arquivo, "%d", &valor) == 1)
-    {
-        if (*tamanho >= capacidade)
-        {
-            capacidade *= 2; // Dobrar a capacidade se necessário
-            valores = (int *)realloc(valores, capacidade * sizeof(int));
-            if (valores == NULL)
-            {
-                printf("Erro ao realocar memória.\n");
-                return 1;
-            }
-        }
-        valores[*tamanho] = valor;
-        (*tamanho)++;
-    }
-
-    return valores;
-}
-
-//Implementação do MergeSort
 // Função que realiza o merge de dois subarrays
 void merge(int vet[], int esq, int meio, int dir) {
     int tamVet1 = meio - esq + 1;
@@ -151,25 +124,17 @@ void merge(int vet[], int esq, int meio, int dir) {
 
 
 // Função principal do Merge Sort
-void mergeSort(int vet[], int esq, int dir) {
+void organizacao(int vet[], int esq, int dir) {
     if (esq < dir) {
         int meio = esq + (dir - esq) / 2;
 
         // Ordena a primeira e a segunda metade
-        mergeSort(vet, esq, meio);
-        mergeSort(vet, meio + 1, dir);
+        organizacao(vet, esq, meio);
+        organizacao(vet, meio + 1, dir);
 
         // Junta as metades ordenadas
         merge(vet, esq, meio, dir);
     }
-}
-
-
-void organizacao(int vet[]) //onde vai ter o mergesort
-{
-    int tam = sizeof(vet) / sizeof(vet[0]);
-
-    mergeSort(vet[], 0, tam - 1);
 }
 
 int main(int arqc, char *arqv[])
@@ -186,7 +151,6 @@ int main(int arqc, char *arqv[])
         printf("contado: %d\n", contador);
     }
 
-    // arquivo = (FILE **)malloc(contador * sizeof(FILE *)); - a ideia era um vetor de file para conter a leitura de cada file separadamente
 
     for (i = 0; i < contador; i++)
     {
@@ -211,8 +175,8 @@ int main(int arqc, char *arqv[])
     if (qnt == 2)
     {
 
-        pthread_create(&t1, NULL, (void *)ler_arquivo, (void *)arqv[2]);
-        pthread_create(&t2, NULL, (void *)ler_arquivo, (void *)arqv[3]);
+        pthread_create(&t1, NULL, (void *)executar_funcoes, (void *)arqv[2]);
+        pthread_create(&t2, NULL, (void *)executar_funcoes, (void *)arqv[3]);
 
         pthread_join(t1, NULL);
         pthread_join(t2, NULL);

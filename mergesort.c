@@ -18,7 +18,8 @@ int executar_funcoes(FILE *arquivo, char *posidofile, int *valores, int *tamanho
 ler_arquivos(&arquivo, &posidofile, &valores, &tamanhoatual);
 
 
-organizacao();
+
+organizacao(valores, 0, tamanhoatual - 1);
 
 
 }
@@ -67,45 +68,73 @@ int *ler_arquivo(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatua
     return valores;
 }
 
-int *ler_arquivo(FILE *arquivo, int *tamanho) //essa função veio do chat, usei de exemplo
-{
-    int capacidade = 100; // Capacidade inicial do vetor
-    int *valores;
-    int valor; // está variável irá guardar o valor atual lido para guardar em "valores"
+// Função que realiza o merge de dois subarrays
+void merge(int vet[], int esq, int meio, int dir) {
+    int tamVet1 = meio - esq + 1;
+    int tamVet2 = dir - meio;
 
-    valores = (int *)malloc(capacidade * sizeof(int)); // Alocação inicial
-    if (valores == NULL)
-    {
-        printf("Erro ao alocar memoria.\n");
-        return 1;
+    // Alocação dinâmica para os vetores temporários
+    int *E = (int *)malloc(tamVet1 * sizeof(int));
+    int *D = (int *)malloc(tamVet2 * sizeof(int));
+
+    if (E == NULL || D == NULL) {
+        printf("Erro ao alocar memória.\n");
+        exit(1);
     }
 
-    *tamanho = 0; // Tamanho atual do vetor
+    // Copia os dados para os vetores temporários
+    for (int i = 0; i < tamVet1; i++)
+        E[i] = vet[esq + i];
 
-    while (fscanf(arquivo, "%d", &valor) == 1)
-    {
-        if (*tamanho >= capacidade)
-        {
-            capacidade *= 2; // Dobrar a capacidade se necessário
-            valores = (int *)realloc(valores, capacidade * sizeof(int));
-            if (valores == NULL)
-            {
-                printf("Erro ao realocar memória.\n");
-                return 1;
-            }
+    for (int j = 0; j < tamVet2; j++)
+        D[j] = vet[meio + 1 + j];
+
+    int i = 0, j = 0, k = esq;
+
+    // Combina os dois subarrays em ordem crescente
+    while (i < tamVet1 && j < tamVet2) {
+        if (E[i] <= D[j]) {
+            vet[k] = E[i];
+            i++;
+        } else {
+            vet[k] = D[j];
+            j++;
         }
-        valores[*tamanho] = valor;
-        (*tamanho)++;
+        k++;
     }
 
-    return valores;
+    // Copia os elementos restantes do vetor E, se houver
+    while (i < tamVet1) {
+        vet[k] = E[i];
+        i++;
+        k++;
+    }
+
+    // Copia os elementos restantes do vetor D, se houver
+    while (j < tamVet2) {
+        vet[k] = D[j];
+        j++;
+        k++;
+    }
+
+    // Libera a memória alocada dinamicamente
+    free(E);
+    free(D);
 }
 
-int organizacao() //onde vai ter o mergesort
-{
 
+// Função principal do Merge Sort
+void organizacao(int vet[], int esq, int dir) {
+    if (esq < dir) {
+        int meio = esq + (dir - esq) / 2;
 
+        // Ordena a primeira e a segunda metade
+        organizacao(vet, esq, meio);
+        organizacao(vet, meio + 1, dir);
 
+        // Junta as metades ordenadas
+        merge(vet, esq, meio, dir);
+    }
 }
 
 int main(int arqc, char *arqv[])
@@ -122,7 +151,6 @@ int main(int arqc, char *arqv[])
         printf("contado: %d\n", contador);
     }
 
-    // arquivo = (FILE **)malloc(contador * sizeof(FILE *)); - a ideia era um vetor de file para conter a leitura de cada file separadamente
 
     for (i = 0; i < contador; i++)
     {
@@ -147,8 +175,8 @@ int main(int arqc, char *arqv[])
     if (qnt == 2)
     {
 
-        pthread_create(&t1, NULL, (void *)ler_arquivo, (void *)arqv[2]);
-        pthread_create(&t2, NULL, (void *)ler_arquivo, (void *)arqv[3]);
+        pthread_create(&t1, NULL, (void *)executar_funcoes, (void *)arqv[2]);
+        pthread_create(&t2, NULL, (void *)executar_funcoes, (void *)arqv[3]);
 
         pthread_join(t1, NULL);
         pthread_join(t2, NULL);

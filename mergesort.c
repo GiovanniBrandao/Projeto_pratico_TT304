@@ -12,23 +12,12 @@ pthread_t t6;
 pthread_t t7;
 pthread_t t8;
 
-int executar_funcoes(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatual) // essa função vai unir a de ler o arquivo e organizar os valores, para a thread fazer ambas
-{
-
-ler_arquivos(&arquivo, &posidofile, &valores, &tamanhoatual);
-
-
-
-organizacao(valores, 0, tamanhoatual - 1);
-
-
-}
 
 int *ler_arquivo(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatual) // passar o arquivo e o vetor para encontar o nome do arquivo
 {
     int capacidade = 100;
     int i, valor = 0;
-    int *tamanhoatual = 0;
+
 
     // tamanhoatual diz a posição atual do vetor, e conta para saber se ele chegou ao final
 
@@ -36,7 +25,7 @@ int *ler_arquivo(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatua
     if (valores == NULL)
     {
         printf("Erro ao alocar memoria.\n");
-        return 1;
+        exit(1);
     }
 
     arquivo = fopen(posidofile, "r"); // nome do arquivo vai estar na posição passada pela função
@@ -44,7 +33,7 @@ int *ler_arquivo(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatua
     {
 
         printf("Nao foi possivel abrir o arquivo\n");
-        return 1;
+        exit(1);
     }
 
     while (fscanf(arquivo, "%d", &valor) == 1)
@@ -56,14 +45,14 @@ int *ler_arquivo(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatua
             if (valores == NULL)
             {
                 printf("Erro ao realocar memória.\n");
-                return 1;
+                exit(1);
             }
         }
         valores[*tamanhoatual] = valor;
         (*tamanhoatual)++;
     }
 
-    fclose(posidofile);
+    fclose(arquivo);
 
     return valores;
 }
@@ -136,6 +125,19 @@ void organizacao(int vet[], int esq, int dir) {
         merge(vet, esq, meio, dir);
     }
 }
+
+int *executar_funcoes(FILE *arquivo, char *posidofile, int *valores, int *tamanhoatual) // essa função vai unir a de ler o arquivo e organizar os valores, para a thread fazer ambas
+{
+
+int *organizado = ler_arquivo(arquivo, posidofile, valores, tamanhoatual);
+
+
+organizacao(organizado, 0, tamanhoatual - 1);
+
+return organizado;
+
+}
+
 
 int main(int arqc, char *arqv[])
 {

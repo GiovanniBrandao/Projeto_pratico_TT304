@@ -250,7 +250,6 @@ int main(int arqc, char *arqv[])
         arg[i].valores = NULL;
         arg[i].tamanhoatual = 0;
         arg[i].numdearqs = arqsporthread + (i < arqsextras ? 1 : 0); //atribui os arquivos extras caso aquela thread não tenha
-        printf("quantidade de arquivos: %d\n", arg[i].numdearqs);
 
         arg[i].posidofile = malloc(arg[i].numdearqs * sizeof(char *)); // Aloca memória para os nomes dos arquivos
         for (int j = 0; j < arg[i].numdearqs; j++)

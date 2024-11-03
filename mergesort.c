@@ -47,6 +47,35 @@ void tratar_parametros_entrada(int arqc, char *arqv[], int *qnt, int *numarqs, c
     }
 }
 
+void merge(int vet[], int esq, int meio, int dir) {
+    int tamVet1 = meio - esq + 1;
+    int tamVet2 = dir - meio;
+    int *E = malloc(tamVet1 * sizeof(int));
+    int *D = malloc(tamVet2 * sizeof(int));
+
+    for (int i = 0; i < tamVet1; i++) E[i] = vet[esq + i];
+    for (int j = 0; j < tamVet2; j++) D[j] = vet[meio + 1 + j];
+
+    int i = 0, j = 0, k = esq;
+    while (i < tamVet1 && j < tamVet2) {
+        vet[k++] = (E[i] <= D[j]) ? E[i++] : D[j++];
+    }
+    while (i < tamVet1) vet[k++] = E[i++];
+    while (j < tamVet2) vet[k++] = D[j++];
+
+    free(E);
+    free(D);
+}
+
+void organizacao(int vet[], int esq, int dir) {
+    if (esq < dir) {
+        int meio = esq + (dir - esq) / 2;
+        organizacao(vet, esq, meio);
+        organizacao(vet, meio + 1, dir);
+        merge(vet, esq, meio, dir);
+    }
+}
+
 void *ler_arquivo(void *arg) {
     ThreadArg *argholder = (ThreadArg *)arg;
     int capacidade = 100; // Capacidade inicial do vetor
@@ -86,6 +115,9 @@ void *ler_arquivo(void *arg) {
         fclose(arquivo);
     }
 
+    // Ordena os valores lidos pela thread após a leitura de todos os arquivos
+    organizacao(argholder->valores, 0, argholder->tamanhoatual - 1);
+
     clock_gettime(CLOCK_MONOTONIC, &tempo_fim);
     tempothread = (tempo_fim.tv_sec - tempo_inicio.tv_sec) + (tempo_fim.tv_nsec - tempo_inicio.tv_nsec) / 1e9;
     printf("Thread %d: Tempo de execução = %f segundos\n", argholder->thread_id, tempothread);
@@ -109,33 +141,20 @@ void esperar_threads(int qnt) {
     }
 }
 
-void merge(int vet[], int esq, int meio, int dir) {
-    int tamVet1 = meio - esq + 1;
-    int tamVet2 = dir - meio;
-    int *E = malloc(tamVet1 * sizeof(int));
-    int *D = malloc(tamVet2 * sizeof(int));
-
-    for (int i = 0; i < tamVet1; i++) E[i] = vet[esq + i];
-    for (int j = 0; j < tamVet2; j++) D[j] = vet[meio + 1 + j];
-
-    int i = 0, j = 0, k = esq;
-    while (i < tamVet1 && j < tamVet2) {
-        vet[k++] = (E[i] <= D[j]) ? E[i++] : D[j++];
+int* mesclar_vetores(ThreadArg *args, int qnt, int *tamanhototal) {
+    *tamanhototal = 0;
+    for (int i = 0; i < qnt; i++) {
+        *tamanhototal += args[i].tamanhoatual;
     }
-    while (i < tamVet1) vet[k++] = E[i++];
-    while (j < tamVet2) vet[k++] = D[j++];
 
-    free(E);
-    free(D);
-}
-
-void organizacao(int vet[], int esq, int dir) {
-    if (esq < dir) {
-        int meio = esq + (dir - esq) / 2;
-        organizacao(vet, esq, meio);
-        organizacao(vet, meio + 1, dir);
-        merge(vet, esq, meio, dir);
+    int *vetorfinal = malloc(*tamanhototal * sizeof(int));
+    int posicao = 0;
+    for (int i = 0; i < qnt; i++) {
+        memcpy(vetorfinal + posicao, args[i].valores, args[i].tamanhoatual * sizeof(int));
+        posicao += args[i].tamanhoatual;
     }
+
+    return vetorfinal;
 }
 
 void gravar_vetor_ordenado(int *vetor, int tamanho, const char *outputfile) {
@@ -179,20 +198,16 @@ int main(int arqc, char *arqv[]) {
     esperar_threads(qnt);
 
     vetorfinal = mesclar_vetores(args, qnt, &tamanhototal);
-    organizacao(vetorfinal, 0, tamanhototal - 1);
+    organizacao(vetorfinal, 0, tamanhototal - 1);  // Ordenação final para garantir a organização completa
     gravar_vetor_ordenado(vetorfinal, tamanhototal, outputfile);
 
     clock_gettime(CLOCK_MONOTONIC, &fimprog);
     tempoprogtot = (fimprog.tv_sec - inicioprog.tv_sec) + (fimprog.tv_nsec - inicioprog.tv_nsec) / 1e9;
     printf("Tempo total do programa: %.6f segundos\n", tempoprogtot);
 
-    // Libera memória alocada
-    free(vetorfinal);
-    for (int i = 0; i < qnt; i++) {
-        free(args[i].valores);
-        free(args[i].posidofile);
-    }
+    for (int i = 0; i < qnt; i++) free(args[i].posidofile);
     free(args);
+    free(vetorfinal);
 
     return 0;
 }

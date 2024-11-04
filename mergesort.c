@@ -83,8 +83,6 @@ void *ler_arquivo(void *arg) {
     struct timespec tempo_inicio, tempo_fim;
     double tempothread;
 
-    clock_gettime(CLOCK_MONOTONIC, &tempo_inicio);
-
     argholder->valores = malloc(capacidade * sizeof(int));
     if (argholder->valores == NULL) {
         printf("Erro ao alocar memória para valores\n");
@@ -114,6 +112,8 @@ void *ler_arquivo(void *arg) {
         }
         fclose(arquivo);
     }
+
+    clock_gettime(CLOCK_MONOTONIC, &tempo_inicio);
 
     // Ordena os valores lidos pela thread após a leitura de todos os arquivos
     organizacao(argholder->valores, 0, argholder->tamanhoatual - 1);

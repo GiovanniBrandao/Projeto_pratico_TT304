@@ -219,6 +219,7 @@ void gravar_vetor_ordenado(int *vetor, int tamanho, const char *outputfile)
 
 int main(int arqc, char *arqv[])
 {
+
     int qnt;                             // quantidade de threads
     int numarqs = 0;                     // quantidade de arquivos
     int tamanhototal;                    // quantidade de inteiros lidos de um arquivo
@@ -227,6 +228,8 @@ int main(int arqc, char *arqv[])
     struct timespec inicioprog, fimprog; // variáveis para calcular, respectivamente, o inicio e o fim do programa principal
     double tempoprogtot;                 // variável para calcular o tempo total do programa
     ThreadArg *args;                     // ponteiro para a estrutura com os parametros
+
+    clock_gettime(CLOCK_MONOTONIC, &inicioprog);
 
     tratar_parametros_entrada(arqc, arqv, &qnt, &numarqs, &outputfile);
 
@@ -246,14 +249,8 @@ int main(int arqc, char *arqv[])
         }
     }
 
-    clock_gettime(CLOCK_MONOTONIC, &inicioprog);
-
     iniciar_threads(args, qnt);
     esperar_threads(qnt);
-
-    clock_gettime(CLOCK_MONOTONIC, &fimprog);
-    tempoprogtot = (fimprog.tv_sec - inicioprog.tv_sec) + (fimprog.tv_nsec - inicioprog.tv_nsec) / 1e9;
-    printf("Tempo total de processamento: %.6f segundos\n", tempoprogtot);
 
     vetorfinal = mesclar_vetores(args, qnt, &tamanhototal);
     organizacao(vetorfinal, 0, tamanhototal - 1); // Ordenação final para garantir a organização completa
@@ -264,6 +261,10 @@ int main(int arqc, char *arqv[])
         free(args[i].posidofile);
     free(args);
     free(vetorfinal);
+
+    clock_gettime(CLOCK_MONOTONIC, &fimprog);
+    tempoprogtot = (fimprog.tv_sec - inicioprog.tv_sec) + (fimprog.tv_nsec - inicioprog.tv_nsec) / 1e9;
+    printf("Tempo total de processamento: %.6f segundos\n", tempoprogtot);
 
     return 0;
 }

@@ -5,6 +5,7 @@ Grupo GyGa Byte
 Integrantes:
 
 Giovanni da Silva Virginio Brandão
+
 Gabriel Aleksandro de Paula
 
 

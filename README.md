@@ -24,12 +24,13 @@ O projeto consiste em um programa em C que utiliza POSIX Threads para criar um s
 
 **===Pré-requisitos===**
 
-Sistema Operacional: Linux (requer POSIX Threads).
-Compilador C: GCC (GNU Compiler Collection).
+*Sistema Operacional: Linux (requer POSIX Threads).
+*Compilador C: GCC (GNU Compiler Collection).
 
 **===Compilação===**
 
 Para compilar o programa, abra o terminal na pasta do projeto e execute sem as aspas:
+
 "make"
 
 **===Execução===**
